@@ -27,7 +27,7 @@ class LRScheduler(tf.keras.optimizers.schedules.LearningRateSchedule):
         self.min_learning_rate = tf.cast(min_learning_rate, tf.float32)
         self.offset_steps = offset_steps
 
-    def __call__(self, step: Union[int, tf.Tensor]) -> tf.Tensor:
+    def __call__(self, step: Union[int, tf.Tensor] =0) -> tf.Tensor:
         step = tf.cast(step + self.offset_steps, tf.float32)
         lr = tf.minimum(
             step * self.increasing_delta, self.max_learning_rate - (step - self.warmup_steps) * self.decreasing_delta
@@ -123,7 +123,7 @@ def get_device_strategy(device) -> tf.distribute.Strategy:
     """Return tensorflow device strategy"""
     # Use TPU
     if device.upper() == "TPU":
-        resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu=os.environ["TPU_NAME"])
+        resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu=os.getenv("TPU_NAME", "local"))
         tf.config.experimental_connect_to_cluster(resolver)
         tf.tpu.experimental.initialize_tpu_system(resolver)
         strategy = tf.distribute.TPUStrategy(resolver)
